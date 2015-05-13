@@ -13,6 +13,8 @@ var mouseY;
 var xNormal;
 var yNormal;
 
+var gridSpacing = 0.8;
+
 //var xBound;
 //var zBound;
 //var height;
@@ -131,173 +133,59 @@ function threeJSinit(d) {
 
 	//-------NAMEPOINTS------------
 
-	//var xBound = 10;
-	//var xBound = d.maleNames.length;
-	//var xBound = Math.floor(data.maleNames.length * 0.5); //for names
-	var zBound = 100; //for years
 
-	var particles = new THREE.Geometry();
-	var linePoints = new THREE.Geometry();
 
 	var yearSystem = []; //SHOULD THIS BE SOME SORT OF CONTAINER?
-	//var yearParticles = new THREE.Geometry();
 
-	var gridWidth = d.maleNames.length;
 
-	var midPosZ = 50;
+	//====SETTING UP YEAR GUIDE GRID====//
+	for (var z = 1914; z < 2014; z++) {
 
-	var lines = [];
-	var renderedNames = [];
+		var fZ = (z - 1914) * gridSpacing * 2;
+		//if (x == 0) {
+		if (z % 5 == 4) {
+			var yearSprite = makeTextTexture(z, {
+				'fontsize': 70
+			});
 
-	var endSprite = THREE.ImageUtils.loadTexture(
-		"images/endSpriteB.png"
-	);
+			//yearMaterials[(z - 1914)] = new THREE.PointCloudMaterial({
+			yearMaterial = new THREE.PointCloudMaterial({
 
-	var lineSprite = THREE.ImageUtils.loadTexture(
-		"images/lineSpriteB.png"
-	);
+				color: 0xFFFFFF,
+				size: 5, //was 2
+				map: yearSprite,
+				blending: THREE.AdditiveBlending,
+				depthTest: false,
+				transparent: true
+			});
 
-	var endPointMaterials = [];
+			//var yearParticle = new THREE.Vector3(fX, 0, fZ);
+			var yearParticle = new THREE.Vector3(0, 0, fZ);
 
-	var yearMaterials = [];
+			var yearParticles = new THREE.Geometry();
 
-	//for (var x = -xBound; x <= xBound; x++) {
-	for (var x = 0; x < gridWidth; x++) {
-		//START WITH X, THEN ADD THIS:
-		//var height = Math.random() * 3;
+			yearParticles.vertices.push(yearParticle);
 
-		//console.log("x: " + x);
-
-		var endPointParticles = new THREE.Geometry();
-
-		var thisName = d.maleNames[x].name.toUpperCase();
-		var nameSprite = makeTextTexture(thisName);
-
-		endPointMaterials[x] = new THREE.PointCloudMaterial({
-			size: 2, //was 1
-			map: nameSprite,
-			blending: THREE.AdditiveBlending,
-			depthTest: false,
-			transparent: true
-		});
-
-		var hslAdjust = x / gridWidth;
-
-		endPointMaterials[x].color.setRGB(1.0, hslAdjust, 0.0);
-		//endPointMaterials[x].color.setHSL(1.0, hslAdjust, 1.0);
-		//for (var z = -zBound; z <= zBound; z++) {
-		for (var z = 1914; z < 2014; z++) {
-
-			var height;
-
-			//var thisYear = 1914;
-			for (var statsIndex in d.maleNames[x].stats) {
-				if (d.maleNames[x].stats[statsIndex].year == z) {
-					height = d.maleNames[x].stats[statsIndex].count;
-					//console.log("Name: " + d.maleNames[x].name + ", Year: " + d.maleNames[x].stats[statsIndex].year + ", Height: " + height);
-					break;
-				}
-			}
-
-			height *= 0.0005;
-
-			//=====UPDATING X AND Z==========
-			var gridSpacing = 0.8;
-			var fX = (x) * gridSpacing * 1; //var fX = (x - gridWidth * 0.5) * gridSpacing * 1;
-			var fZ = (z - 1914) * gridSpacing * 2;
-			//var y = height;
-			if (height > 0) {
-				var particle = new THREE.Vector3(fX, height, fZ); //-d.maleNames.length/2
-				//console.log("Particle Height: " + particle.y);
-				//var particle = new THREE.Vertex(vert);
-
-				//particles.vertices.push(particle);
-				endPointParticles.vertices.push(particle);
-			}
-
-			for (var i = 0.5; i < height; i += 0.5) {
-				var linePoint = new THREE.Vector3(fX, i, fZ);
-				linePoints.vertices.push(linePoint);
-
-			}
-
-			//====SETTING UP YEAR GUIDE GRID====//
-
-			if (x == 0) {
-				if (z % 5 == 4) {
-					var yearSprite = makeTextTexture(z, {
-						'fontsize': 130
-					});
-
-					//yearMaterials[(z - 1914)] = new THREE.PointCloudMaterial({
-					yearMaterial = new THREE.PointCloudMaterial({
-
-						color: 0xFFFFFF,
-						size: 5, //was 2
-						map: yearSprite,
-						blending: THREE.AdditiveBlending,
-						depthTest: false,
-						transparent: true
-					});
-
-					var yearParticle = new THREE.Vector3(fX, 0, fZ);
-
-					var yearParticles = new THREE.Geometry();
-
-					yearParticles.vertices.push(yearParticle);
-
-					var singleYearPointCloud = new THREE.PointCloud(yearParticles, yearMaterial);
-					yearSystem.push(singleYearPointCloud);
-				}
-			}
-
+			var singleYearPointCloud = new THREE.PointCloud(yearParticles, yearMaterial);
+			yearSystem.push(singleYearPointCloud);
 		}
 
-
-		var endSystem = new THREE.PointCloud(endPointParticles, endPointMaterials[x]);
-		scene.add(endSystem);
 	}
 
 
-	var material = new THREE.PointCloudMaterial({
-		color: 0xFF0000,
-		size: 1
-	});
-
-	var pMaterial = new THREE.PointCloudMaterial({
-		color: 0xFFC960,
-		size: 2,
-		map: endSprite,
-		blending: THREE.AdditiveBlending,
-		depthTest: false,
-		transparent: true
-	});
-
-	var pLineMaterial = new THREE.PointCloudMaterial({
-		color: 0xFFFFFF,
-		size: 1,
-		map: lineSprite,
-		blending: THREE.AdditiveBlending,
-		depthTest: false,
-		transparent: true
-	});
-
-	//var particleSystem = new THREE.PointCloud(particles, pMaterial);
-	//scene.add(particleSystem);
-
-	var lineSystem = new THREE.PointCloud(linePoints, pLineMaterial);
-
-	scene.add(lineSystem);
-
-	//different because "yearSystem is an array, not pointcloud"
+	// //different because "yearSystem is an array, not pointcloud"
 	for (var i = 0; i < yearSystem.length; i++) {
 		scene.add(yearSystem[i]);
 	}
-	// for (var i = 0; i < renderedNames.length; i++) {
-	// 	scene.add(renderedNames[i]);
-	// }
+	// // for (var i = 0; i < renderedNames.length; i++) {
+	// // 	scene.add(renderedNames[i]);
+	// // }
 
+	//var invert = false;
+	makeNamespace(d.maleNames, false);
 
+	makeNamespace(d.femaleNames, true);
+	//invert = true;
 
 	//-------LIGHTS------------
 
@@ -321,9 +209,9 @@ function threeJSinit(d) {
 	//camera.rotation.order = 'YXZ';
 
 	//camera.position.set(-7, 3, 7);
-	camera.position.set(0, 20, 0);
+	camera.position.set(0, 20, -10);
 	camera.rotation.set(0, 0, 0);
-	camera.lookAt(new THREE.Vector3(0, 20, midPosZ));
+	camera.lookAt(new THREE.Vector3(0, 20, 0)); //midPosZ
 
 	//TO INCREMENT THINGS...
 	var frameCount = 0;
@@ -335,12 +223,7 @@ function threeJSinit(d) {
 		//controls.update();
 
 		//REMEMBER THAT THIS IS X,Z, NOT Z,Y
-		var camRotateX = Math.sin(frameCount * rotateSpeed) * -70;
-		var camRotateZ = Math.cos(frameCount * rotateSpeed) * 70;
-		//old rotateSpeed was 0.001
 
-		//var camRotateX = Math.PI*0.5;
-		//var camRotateZ = Math.PI*0.5;
 
 		//VECTOR POSITION SETTING:
 		//camera.position.set(camRotateX, 30, camRotateZ + 50);
@@ -423,7 +306,151 @@ function threeJSinit(d) {
 	//if (loaded) {
 	render();
 
+	//thisArray = d.maleNames or d.femaleNames
+	function makeNamespace(thisArray, inverse) {
 
+		var zBound = 100; //for years
+
+		var particles = new THREE.Geometry();
+		//var linePoints = new THREE.Geometry();
+
+		var gridWidth = thisArray.length;
+
+		var midPosZ = 50;
+
+		var endSprite = THREE.ImageUtils.loadTexture(
+			"images/endSpriteB.png"
+		);
+
+		var lineSprite = THREE.ImageUtils.loadTexture(
+			"images/lineSpriteB.png"
+		);
+
+		var endPointMaterials = [];
+
+		for (var x = 0; x < gridWidth; x++) {
+
+			var endPointParticles = new THREE.Geometry();
+			var linePoints = new THREE.Geometry();
+
+			var thisName = thisArray[x].name.toUpperCase();
+			var nameSprite = makeTextTexture(thisName);
+
+			endPointMaterials[x] = new THREE.PointCloudMaterial({
+				size: 2, //was 1
+				map: nameSprite,
+				blending: THREE.AdditiveBlending,
+				depthTest: false,
+				transparent: true
+			});
+
+			var pLineMaterial = new THREE.PointCloudMaterial({
+				//color: 0xFFFFFF,
+				size: 1,
+				map: lineSprite,
+				blending: THREE.AdditiveBlending,
+				depthTest: false,
+				transparent: true
+			});
+
+			var hslAdjust = x / gridWidth;
+
+			if (inverse) {
+				endPointMaterials[x].color.setRGB(0.0, 1.0, 1.0 - hslAdjust);
+				pLineMaterial.color.setRGB(0.0, 1.0, 1.0 - hslAdjust);
+			} else {
+				endPointMaterials[x].color.setRGB(1.0, hslAdjust, 0.0);
+				pLineMaterial.color.setRGB(1.0, hslAdjust, 0.0);
+			}
+
+			for (var z = 1914; z < 2014; z++) {
+
+				var height;
+
+				for (var statsIndex in thisArray[x].stats) {
+					if (thisArray[x].stats[statsIndex].year == z) {
+						height = thisArray[x].stats[statsIndex].count;
+						//console.log("Name: " + d.maleNames[x].name + ", Year: " + d.maleNames[x].stats[statsIndex].year + ", Height: " + height);
+						break;
+					}
+				}
+
+				height *= 0.00025;
+
+				//=====UPDATING X AND Z==========
+				//var gridSpacing = 0.8;
+				var xFromZeroOffset = 1;
+				var fX = ((x) * gridSpacing * 1) + xFromZeroOffset; //var fX = (x - gridWidth * 0.5) * gridSpacing * 1;
+				var fZ = (z - 1914) * gridSpacing * 2;
+
+				if (inverse) {
+					//fX = -1 * fX;
+					fX += gridSpacing * 0.5;
+					//fX *= -1;
+				}
+
+				if (height > 0) {
+					var particle = new THREE.Vector3(fX, height, fZ); //-d.maleNames.length/2
+					//console.log("Particle Height: " + particle.y);
+
+					endPointParticles.vertices.push(particle);
+				}
+
+				//for (var i = 0.5; i < height; i += 0.5) {
+				var spacer = 0.25;
+				//for (var i = height; i > 0; i -= spacer) {
+				for (var i = 0.5; i < height; i += 0.5) {
+				
+					var linePoint = new THREE.Vector3(fX, height/((height-i)+1), fZ); //y was i
+					linePoints.vertices.push(linePoint);
+					spacer *= 1.1;
+
+				}
+
+			}
+
+			var endSystem = new THREE.PointCloud(endPointParticles, endPointMaterials[x]);
+			scene.add(endSystem);
+
+			var lineSystem = new THREE.PointCloud(linePoints, pLineMaterial);
+			scene.add(lineSystem);
+		}
+
+
+		// var material = new THREE.PointCloudMaterial({
+		// 	color: 0xFF0000,
+		// 	size: 1
+		// });
+
+		var pMaterial = new THREE.PointCloudMaterial({
+			color: 0xFFC960,
+			size: 2,
+			map: endSprite,
+			blending: THREE.AdditiveBlending,
+			depthTest: false,
+			transparent: true
+		});
+
+		// var pLineMaterial = new THREE.PointCloudMaterial({
+		// 	color: 0xFFFFFF,
+		// 	size: 1,
+		// 	map: lineSprite,
+		// 	blending: THREE.AdditiveBlending,
+		// 	depthTest: false,
+		// 	transparent: true
+		// });
+
+		//var particleSystem = new THREE.PointCloud(particles, pMaterial);
+		//scene.add(particleSystem);
+
+		//var lineSystem = new THREE.PointCloud(linePoints, pLineMaterial);
+		//scene.add(lineSystem);
+
+		//different because "yearSystem is an array, not pointcloud"
+		// for (var i = 0; i < yearSystem.length; i++) {
+		// 	scene.add(yearSystem[i]);
+		// }
+	}
 	//}
 	function onWindowResize() {
 
