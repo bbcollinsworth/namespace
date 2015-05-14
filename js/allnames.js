@@ -487,6 +487,7 @@ function threeJSinit(d) {
 	}
 
 	$(window).mousemove(function(e) {
+		//$('h3').css("opacity","0.5");
 		mouseX = e.pageX;
 		mouseY = e.pageY;
 		xNormal = mouseX / window.innerWidth;
@@ -509,6 +510,7 @@ function threeJSinit(d) {
 }
 
 $(document).bind('keydown', function(e) {
+	$('h3').css("opacity","0");
 	if (e.which == 38) {
 		console.log("keypressed Up");
 		if (camera.position.y < 50) {
