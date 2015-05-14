@@ -1,4 +1,5 @@
 
+var firstFrame = true;
 
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -36,7 +37,7 @@ var gridSpacing = 0.8;
 
 jQuery(document).ready(function($) {
 
-
+	$('#loadingDiv').css("opacity","1.0");
 
 	$.ajax({
 		dataType: "json",
@@ -233,6 +234,10 @@ function threeJSinit(d) {
 	var xLookAt = d.femaleNames.length * 0.5;
 	camera.lookAt(new THREE.Vector3(xLookAt, 15, 0)); //midPosZ
 
+	if (firstFrame){
+			loadingTextOut();
+		}
+
 	//TO INCREMENT THINGS...
 	var frameCount = 0;
 
@@ -240,6 +245,8 @@ function threeJSinit(d) {
 	//it runs 60 times per second
 	var render = function() {
 		renderStarted = true;
+
+		
 		//controls.update();
 
 		//REMEMBER THAT THIS IS X,Z, NOT Z,Y
@@ -329,6 +336,15 @@ function threeJSinit(d) {
 		frameCount++;
 
 	};
+
+	function loadingTextOut(){
+		setTimeout(function(){
+		$('#loadingDiv').css("opacity","0.0");
+		},2000);
+		$('#loadingDiv').css("display","none");
+
+		firstFrame = false;
+	}
 
 	function setYearSystemPosition(camX, camY) {
 
