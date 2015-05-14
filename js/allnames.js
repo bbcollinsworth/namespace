@@ -84,7 +84,7 @@ function makeTextTexture(message, parameters) {
 
 
 	context.shadowColor = "white";
-	context.shadowBlur = 50;
+	context.shadowBlur = 10;
 
 	context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
 	context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
@@ -209,9 +209,10 @@ function threeJSinit(d) {
 	//camera.rotation.order = 'YXZ';
 
 	//camera.position.set(-7, 3, 7);
-	camera.position.set(0, 20, -10);
+	camera.position.set(-17, 15, 180);
 	camera.rotation.set(0, 0, 0);
-	camera.lookAt(new THREE.Vector3(0, 20, 0)); //midPosZ
+	var xLookAt = d.femaleNames.length * 0.5;
+	camera.lookAt(new THREE.Vector3(xLookAt, 15, 0)); //midPosZ
 
 	//TO INCREMENT THINGS...
 	var frameCount = 0;
@@ -247,10 +248,10 @@ function threeJSinit(d) {
 		var degree = 3.14 / 180;
 		var rotFactor;
 		if (xNormal <= -0.3) {
-			rotFactor = mathMap(xNormal, -0.3, -1, 0, degree * 1.5);
+			rotFactor = mathMap(xNormal, 0.3, 1, 0, degree * 1.5);
 			rotFactor = -1 * rotFactor;
 		} else if (xNormal >= 0.3) {
-			rotFactor = mathMap(xNormal, 0.3, 1, 0, degree * 1.5);
+			rotFactor = mathMap(xNormal, -0.3, -1, 0, degree * 1.5);
 		} else {
 			rotFactor = 0;
 		}
@@ -261,7 +262,22 @@ function threeJSinit(d) {
 
 		console.log("Cam Pos: " + camera.position.x + ", " + camera.position.y + ", " + camera.position.z);
 
-		setYearSystemPosition(camera.position.x, camera.position.y);
+		var camLookVector = new THREE.Vector3(0, 0, -10).applyQuaternion(camera.quaternion).add(camera.position);
+		var yearsXPos;
+
+		//IT JUMPS BECAUSE IT RESETS TO ABOVE ZERO
+		 if (camLookVector.x <= -10){
+			yearsXPos = -10;
+		} else if (camLookVector.x >= d.femaleNames.length*gridSpacing + 1) {
+			yearsXPos = d.femaleNames.length*gridSpacing + 1;
+		} else {
+			yearsXPos = camLookVector.x;
+		// 	setYearSystemPosition(yearsXPos, camLookVector.y);
+		}
+
+		setYearSystemPosition(yearsXPos, camLookVector.y);
+
+		//setYearSystemPosition(camera.position.x, camera.position.y);
 
 		var lightDistance = 15;
 		var lightRotateX = Math.sin(frameCount * 0.005) * lightDistance;
@@ -316,6 +332,7 @@ function threeJSinit(d) {
 
 		var gridWidth = thisArray.length;
 
+
 		var midPosZ = 50;
 
 		var endSprite = THREE.ImageUtils.loadTexture(
@@ -328,7 +345,11 @@ function threeJSinit(d) {
 
 		var endPointMaterials = [];
 
+		var xAdjust = d.femaleNames.length / gridWidth;
+
+		//for (var x = 0; x < gridWidth; x++) {
 		for (var x = 0; x < gridWidth; x++) {
+
 
 			var endPointParticles = new THREE.Geometry();
 			var linePoints = new THREE.Geometry();
@@ -359,8 +380,9 @@ function threeJSinit(d) {
 				endPointMaterials[x].color.setRGB(0.0, 1.0, 1.0 - hslAdjust);
 				pLineMaterial.color.setRGB(0.0, 1.0, 1.0 - hslAdjust);
 			} else {
-				endPointMaterials[x].color.setRGB(1.0, hslAdjust, 0.0);
-				pLineMaterial.color.setRGB(1.0, hslAdjust, 0.0);
+				//could be pinker...switch g and b
+				endPointMaterials[x].color.setRGB(1.0, 0.1 + hslAdjust * 0.9, 0.0);
+				pLineMaterial.color.setRGB(1.0, 0.1 + hslAdjust * 0.9, 0.0);
 			}
 
 			for (var z = 1914; z < 2014; z++) {
@@ -387,6 +409,8 @@ function threeJSinit(d) {
 					//fX = -1 * fX;
 					fX += gridSpacing * 0.5;
 					//fX *= -1;
+				} else {
+					fX *= xAdjust;
 				}
 
 				if (height > 0) {
@@ -399,14 +423,13 @@ function threeJSinit(d) {
 				//for (var i = 0.5; i < height; i += 0.5) {
 				var spacer = 0.25;
 				//for (var i = height; i > 0; i -= spacer) {
-				for (var i = 0.5; i < height; i += 0.5) {
-				
-					var linePoint = new THREE.Vector3(fX, height/((height-i)+1), fZ); //y was i
+				for (var i = 0.25; i < height; i += 0.25) {
+
+					var linePoint = new THREE.Vector3(fX, height - (i * i) / height, fZ); //y was i
 					linePoints.vertices.push(linePoint);
 					spacer *= 1.1;
 
 				}
-
 			}
 
 			var endSystem = new THREE.PointCloud(endPointParticles, endPointMaterials[x]);
@@ -415,12 +438,6 @@ function threeJSinit(d) {
 			var lineSystem = new THREE.PointCloud(linePoints, pLineMaterial);
 			scene.add(lineSystem);
 		}
-
-
-		// var material = new THREE.PointCloudMaterial({
-		// 	color: 0xFF0000,
-		// 	size: 1
-		// });
 
 		var pMaterial = new THREE.PointCloudMaterial({
 			color: 0xFFC960,
@@ -431,27 +448,8 @@ function threeJSinit(d) {
 			transparent: true
 		});
 
-		// var pLineMaterial = new THREE.PointCloudMaterial({
-		// 	color: 0xFFFFFF,
-		// 	size: 1,
-		// 	map: lineSprite,
-		// 	blending: THREE.AdditiveBlending,
-		// 	depthTest: false,
-		// 	transparent: true
-		// });
-
-		//var particleSystem = new THREE.PointCloud(particles, pMaterial);
-		//scene.add(particleSystem);
-
-		//var lineSystem = new THREE.PointCloud(linePoints, pLineMaterial);
-		//scene.add(lineSystem);
-
-		//different because "yearSystem is an array, not pointcloud"
-		// for (var i = 0; i < yearSystem.length; i++) {
-		// 	scene.add(yearSystem[i]);
-		// }
 	}
-	//}
+
 	function onWindowResize() {
 
 		windowHalfX = window.innerWidth / 2;
