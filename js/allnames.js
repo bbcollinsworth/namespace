@@ -1,3 +1,18 @@
+
+
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+//var controls = new THREE.OrbitControls( camera );
+//controls.addEventListener( 'change', render );
+
+//---RENDERER SETTINGS
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+//document.body.appendChild(renderer.domElement);
+var wrapper = document.getElementById('wrapper');
+wrapper.appendChild(renderer.domElement);
+
 var cubes = [];
 var loaded = false;
 
@@ -20,6 +35,8 @@ var gridSpacing = 0.8;
 //var height;
 
 jQuery(document).ready(function($) {
+
+
 
 	$.ajax({
 		dataType: "json",
@@ -112,16 +129,18 @@ function threeJSinit(d) {
 	console.log("Post-AJAX log: ");
 	console.log(d);
 
-	var scene = new THREE.Scene();
-	var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-	//var controls = new THREE.OrbitControls( camera );
-	//controls.addEventListener( 'change', render );
+	// var scene = new THREE.Scene();
+	// var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+	// //var controls = new THREE.OrbitControls( camera );
+	// //controls.addEventListener( 'change', render );
 
-	//---RENDERER SETTINGS
-	var renderer = new THREE.WebGLRenderer();
-	renderer.setSize(window.innerWidth, window.innerHeight);
+	// //---RENDERER SETTINGS
+	// var renderer = new THREE.WebGLRenderer();
+	// renderer.setSize(window.innerWidth, window.innerHeight);
 
-	document.body.appendChild(renderer.domElement);
+	// //document.body.appendChild(renderer.domElement);
+	// var wrapper = document.getElementById('wrapper');
+	// wrapper.appendChild(renderer.domElement);
 	//(NOTE THAT THE RENDERER CAN BE ATTACHED TO ANY D.O.M. ELEMENT)
 
 	//var skyColor = new THREE.Color(0.9, 0.9, 1);
@@ -139,7 +158,7 @@ function threeJSinit(d) {
 
 
 	//====SETTING UP YEAR GUIDE GRID====//
-	for (var z = 1914; z < 2014; z++) {
+	for (var z = 1914; z <= 2014; z++) {
 
 		var fZ = (z - 1914) * gridSpacing * 2;
 		//if (x == 0) {
@@ -256,23 +275,23 @@ function threeJSinit(d) {
 			rotFactor = 0;
 		}
 		//var rotFactor = xNormal*3.14/180;
-		console.log("RotFactor: " + rotFactor);
+		//console.log("RotFactor: " + rotFactor);
 		camera.rotation.y += rotFactor;
-		console.log("Rotation: " + camera.rotation.y);
+		//console.log("Rotation: " + camera.rotation.y);
 
-		console.log("Cam Pos: " + camera.position.x + ", " + camera.position.y + ", " + camera.position.z);
+		//console.log("Cam Pos: " + camera.position.x + ", " + camera.position.y + ", " + camera.position.z);
 
 		var camLookVector = new THREE.Vector3(0, 0, -10).applyQuaternion(camera.quaternion).add(camera.position);
 		var yearsXPos;
 
 		//IT JUMPS BECAUSE IT RESETS TO ABOVE ZERO
-		 if (camLookVector.x <= -10){
+		if (camLookVector.x <= -10) {
 			yearsXPos = -10;
-		} else if (camLookVector.x >= d.femaleNames.length*gridSpacing + 1) {
-			yearsXPos = d.femaleNames.length*gridSpacing + 1;
+		} else if (camLookVector.x >= d.femaleNames.length * gridSpacing + 1) {
+			yearsXPos = d.femaleNames.length * gridSpacing + 1;
 		} else {
 			yearsXPos = camLookVector.x;
-		// 	setYearSystemPosition(yearsXPos, camLookVector.y);
+			// 	setYearSystemPosition(yearsXPos, camLookVector.y);
 		}
 
 		setYearSystemPosition(yearsXPos, camLookVector.y);
@@ -486,25 +505,27 @@ function threeJSinit(d) {
 
 	});
 
-	$(document).on('keydown', function(e) {
-		if (e.which == 38) {
-			console.log("keypressed Up");
-			if (camera.position.y < 50) {
-				camera.position.y += 0.5;
-			}
-		} else if (e.which == 40) {
-			console.log("keypressed Down");
-			if (camera.position.y > 0) {
-				camera.position.y -= 0.5;
-			}
-		} else if (e.which == 37) {
-			console.log("keypressed Left");
-			camera.translateX(-0.75);
-		} else if (e.which == 39) {
-			console.log("keypressed right");
-			camera.translateX(0.75);
-		}
-	});
+
 }
+
+$(document).bind('keydown', function(e) {
+	if (e.which == 38) {
+		console.log("keypressed Up");
+		if (camera.position.y < 50) {
+			camera.position.y += 0.5;
+		}
+	} else if (e.which == 40) {
+		console.log("keypressed Down");
+		if (camera.position.y > 0) {
+			camera.position.y -= 0.5;
+		}
+	} else if (e.which == 37) {
+		console.log("keypressed Left");
+		camera.translateX(-0.75);
+	} else if (e.which == 39) {
+		console.log("keypressed right");
+		camera.translateX(0.75);
+	}
+});
 
 //init();
